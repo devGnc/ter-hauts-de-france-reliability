@@ -1,0 +1,5 @@
+# Python 3.11 minimum (exigé par pandas 3).
+requests==2.34.2
+pandas==3.0.6
+gtfs-realtime-bindings==3.0.0
+python-dotenv==1.2.3
