@@ -25,7 +25,7 @@ Sub-questions:
 
 | Source | Role | Licence |
 | --- | --- | --- |
-| [SNCF GTFS-RT Trip Updates, all services](https://proxy.transport.data.gouv.fr/resource/sncf-all-gtfs-rt-trip-updates) | Actual delays and cancellations. Refreshed every 2 min and covers trains in the next 60 min. Includes TGV, Intercités and TER. Not archived by the publisher. | ODbL |
+| [SNCF GTFS-RT Trip Updates, all services](https://transport.data.gouv.fr/resources/83583) | Actual delays and cancellations. Refreshed every 2 min and covers trains in the next 60 min. Includes TGV, Intercités and TER. Not archived by the publisher. | ODbL |
 | [Hauts-de-France regional GTFS](https://transport.data.gouv.fr/resources/83620/download) ("Trains régionaux Hauts-de-France mobilités") | Official scope: lines, trips, stops and timetables for the next 90 days. | Not specified |
 | [SNCF national TER GTFS](https://eu.ftp.opendatasoft.com/sncf/plandata/export-ter-gtfs-last.zip) | Cross-check of the regional GTFS. | ODbL |
 | [Monthly TER punctuality](https://ressources.data.sncf.com/explore/dataset/regularite-mensuelle-ter/) (SNCF Open Data) | Official regional benchmark (5-minute threshold at terminus), used to validate the computed figures. | ODbL |

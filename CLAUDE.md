@@ -23,7 +23,7 @@ Cadrage conseil : la Région est un client fictif. Le projet se conclut par 3 re
 
 ## Sources
 
-- GTFS-RT Trip Updates SNCF, toutes activités : `https://proxy.transport.data.gouv.fr/resource/sncf-all-gtfs-rt-trip-updates`. L'ancienne URL `sncf-ter-gtfs-rt-trip-updates` est **obsolète** et ne couvre pas tous les TER.
+- GTFS-RT Trip Updates SNCF, toutes activités (TGV, Intercités, TER ; ressource transport.data.gouv.fr n° 83583) : `https://proxy.transport.data.gouv.fr/resource/sncf-gtfs-rt-trip-updates`. Vérifié le 23/09/2026 : les URL `sncf-all-gtfs-rt-trip-updates` et `sncf-ter-gtfs-rt-trip-updates` renvoient **404**, ne pas les utiliser.
 - GTFS Région Hauts-de-France : `https://transport.data.gouv.fr/resources/83620/download` (à dézipper dans `data/gtfs_region/`).
 - GTFS TER national SNCF (contrôle croisé, ODbL) : `https://eu.ftp.opendatasoft.com/sncf/plandata/export-ter-gtfs-last.zip`.
 - Régularité mensuelle TER (SNCF Open Data, seuil de 5 min au terminus) : référence pour la phase 3.
