@@ -17,7 +17,8 @@ import pandas as pd
 import requests
 from google.transit import gtfs_realtime_pb2
 
-URL = "https://proxy.transport.data.gouv.fr/resource/sncf-all-gtfs-rt-trip-updates"
+# Flux national (TGV, Intercités, TER). Les variantes "sncf-all-..." et "sncf-ter-..." renvoient 404.
+URL = "https://proxy.transport.data.gouv.fr/resource/sncf-gtfs-rt-trip-updates"
 # Chemins construits à partir de l'emplacement du script (src/ -> racine du dépôt),
 # pour que le script fonctionne quel que soit le dossier d'où on le lance.
 RACINE = Path(__file__).resolve().parent.parent
