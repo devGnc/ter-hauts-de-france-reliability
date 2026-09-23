@@ -1,0 +1,25 @@
+# --- Données : jamais commitées ---
+# Licence ODbL (SNCF) et licence non spécifiée (GTFS régional) :
+# on ne republie aucune donnée brute ni dérivée dans le dépôt.
+data/
+snapshots/
+gtfs_*/
+*.pb
+*.zip
+
+# --- Secrets ---
+# Seul .env.example (noms de variables, sans valeurs) est versionné.
+.env
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+
+# --- Réglages locaux de Claude Code ---
+.claude/settings.local.json
+
+# --- Fichiers système ---
+.DS_Store
+Thumbs.db
+desktop.ini
