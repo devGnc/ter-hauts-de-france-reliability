@@ -33,6 +33,7 @@ Cadrage conseil : la Région est un client fictif. Le projet se conclut par 3 re
 - **D1 — Périmètre :** GTFS de la Région, 71 lignes, `route_id` identiques au GTFS national. Exclus : cars (`route_type = 3`) et K1, K2, C73, C76 (vraisemblablement Grand Est, à confirmer). **65 lignes ferroviaires.** `agency_id` et `route_short_name` sont écartés comme critères (non discriminants ou non uniques).
 - **D2 — Clé de trajet :** numéro de train + date de circulation. Le `trip_id` contient un horodatage d'export et change entre les versions. Le numéro est dans `trip_headsign` et s'extrait du `trip_id` par `OCE[A-Z]{2}(\d+)` (préfixe `OCESN` agence 1187, `OCEEA` agence 5235 ; `OCESN(\d+)` seul ratait toutes les lignes picardes). Provisoire : à valider contre le flux en phase 0.
 - **D3 — Train prévu à l'instant T :** en circulation (départ ≤ T ≤ arrivée, horaires théoriques) ou départ dans l'heure qui suit (T < départ ≤ T + 60 min). Fenêtre mesurée sur 5 observations avec `src/phase0_fenetre_flux.py` (33 à 44 % des trains du flux pas encore partis ; trains visibles 4 à 5 min après l'arrivée, non intégré).
+- **D4 — Cars de remplacement :** les trajets dont le mode est `Car TER` (lu dans le `stop_id` du GTFS) sont exclus des trains prévus, même sous une ligne ferroviaire : le flux ne suit pas les cars.
 
 Détail complet : `DECISIONS.md`.
 
@@ -44,6 +45,8 @@ Détail complet : `DECISIONS.md`.
 - **Identifiants instables :** voir D2. Une jointure qui perd des trains en silence fausse tous les résultats.
 - **GitHub Actions :** les tâches planifiées peuvent être retardées ou sautées. Vérifier leurs limites avant de choisir : fréquence minimale, quotas public/privé, désactivation après inactivité.
 - **Stockage :** dimensionner dès la phase 0 par rapport aux 500 Mo de Supabase.
+- **GTFS en fenêtre glissante :** le GTFS régional couvre ~90 jours à partir de sa date de publication ; les jours passés en sortent. Archiver chaque version (`data/gtfs_archive/`).
+- **Suppressions effacées après coup :** une version plus récente du GTFS retire les trains supprimés (constaté : 8 `CANCELED` → 1 pour le 25/09 18 h). Un GTFS publié après les faits sous-estime les suppressions : choisir quelle version fait foi (décision à venir).
 - **Qualité du flux :** le validateur de transport.data.gouv.fr signalait de nombreuses erreurs sur le flux national (mars 2026). Prévoir du nettoyage.
 
 ## Phase en cours
