@@ -18,3 +18,10 @@ Ce journal alimente la section *Method* du README.
 - **Écarté :** `trip_id` seul. Il contient un horodatage d'export (ex. `OCESN16350F8784835:2026-09-22T17:41:41Z`, 25 horodatages distincts dans un seul fichier) et change donc d'une version du GTFS à l'autre.
 - **Raison :** une jointure sur un identifiant instable perdrait des trains sans erreur visible.
 - **Statut :** provisoire, à valider contre le flux temps réel en phase 0 (voir `docs/phase0_feasibility.md`).
+
+## D3 — Définition d'un « train prévu » au moment d'une observation
+
+- **Retenu :** un train est prévu à l'instant T s'il est en circulation (départ théorique ≤ T ≤ arrivée théorique) ou si son départ théorique a lieu dans l'heure qui suit (T < départ ≤ T + 60 min).
+- **Écarté :** trains en circulation uniquement. Sur 5 observations (23 au 26/09), 33 à 44 % des trains du flux n'étaient pas encore partis, tous dans les 60 min : les exclure du dénominateur gonflerait la couverture d'environ 60 %.
+- **Raison :** le dénominateur doit correspondre à ce que le flux montre réellement. Fenêtre mesurée avec `src/phase0_fenetre_flux.py` ; elle confirme la documentation (« trains des 60 prochaines minutes »).
+- **Limite :** les trains restent visibles 4 à 5 min après leur arrivée ; effet négligeable, non intégré. Mesure faite sur tous les trains de France, à confirmer pour les TER HdF.
