@@ -29,6 +29,6 @@ Ce journal alimente la section *Method* du README.
 ## D4 — Cars de remplacement
 
 - **Retenu :** les services assurés par car (mode `Car TER` dans l'identifiant d'arrêt du GTFS), même rangés sous une ligne ferroviaire, sont exclus des trains prévus. Seuls les trains sont mesurés.
-- **Écarté :** les garder comme trains prévus absents. Le flux temps réel ne suit pas les cars : sur 3 observations (25 et 26/09), les 12 absents étaient tous des cars, sans aucune trace dans le flux. Ils seraient toujours comptés comme données manquantes.
+- **Écarté :** les garder comme trains prévus absents. Le flux temps réel ne suit presque pas les cars : sur 3 observations (25 et 26/09), 13 cars étaient prévus et 1 seul apparaissait dans le flux. Ils seraient presque toujours comptés comme données manquantes. Après exclusion, 100 % des trains prévus sont présents dans le flux (404 sur 404).
 - **Raison :** le projet porte sur la fiabilité des trains ; un car prévu au plan de transport n'est pas un train.
 - **Limite :** les services par car (travaux) ne sont pas mesurés, à signaler dans les limites. Question ouverte pour la phase 3 : un train remplacé par un car compte-t-il comme une suppression pour le voyageur ?

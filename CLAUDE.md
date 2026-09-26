@@ -33,7 +33,7 @@ Cadrage conseil : la Région est un client fictif. Le projet se conclut par 3 re
 - **D1 — Périmètre :** GTFS de la Région, 71 lignes, `route_id` identiques au GTFS national. Exclus : cars (`route_type = 3`) et K1, K2, C73, C76 (vraisemblablement Grand Est, à confirmer). **65 lignes ferroviaires.** `agency_id` et `route_short_name` sont écartés comme critères (non discriminants ou non uniques).
 - **D2 — Clé de trajet :** numéro de train + date de circulation. Le `trip_id` contient un horodatage d'export et change entre les versions. Le numéro est dans `trip_headsign` et s'extrait du `trip_id` par `OCE[A-Z]{2}(\d+)` (préfixe `OCESN` agence 1187, `OCEEA` agence 5235 ; `OCESN(\d+)` seul ratait toutes les lignes picardes). Provisoire : à valider contre le flux en phase 0.
 - **D3 — Train prévu à l'instant T :** en circulation (départ ≤ T ≤ arrivée, horaires théoriques) ou départ dans l'heure qui suit (T < départ ≤ T + 60 min). Fenêtre mesurée sur 5 observations avec `src/phase0_fenetre_flux.py` (33 à 44 % des trains du flux pas encore partis ; trains visibles 4 à 5 min après l'arrivée, non intégré).
-- **D4 — Cars de remplacement :** les trajets dont le mode est `Car TER` (lu dans le `stop_id` du GTFS) sont exclus des trains prévus, même sous une ligne ferroviaire : le flux ne suit pas les cars.
+- **D4 — Cars de remplacement :** les trajets dont le mode est `Car TER` (lu dans le `stop_id` du GTFS) sont exclus des trains prévus, même sous une ligne ferroviaire : le flux ne suit presque pas les cars (1 sur 13 observés).
 
 Détail complet : `DECISIONS.md`.
 
