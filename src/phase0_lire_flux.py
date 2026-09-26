@@ -82,8 +82,12 @@ trips = trips[trips.route_id.isin(routes.route_id)]
 
 
 def numero_train(trip_id):
-    """Extrait le numéro de train : 'OCESN16350F8784835:...' -> '16350'."""
-    m = re.search(r"OCESN(\d+)", trip_id)
+    """Extrait le numéro de train : 'OCESN16350F8784835:...' -> '16350'.
+
+    Le préfixe varie selon l'agence : OCESN (agence 1187) ou OCEEA (agence 5235, lignes
+    picardes). [A-Z]{2} accepte n'importe quelles deux lettres majuscules après 'OCE'.
+    """
+    m = re.search(r"OCE[A-Z]{2}(\d+)", trip_id)
     return m.group(1) if m else None
 
 
