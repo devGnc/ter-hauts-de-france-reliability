@@ -40,14 +40,18 @@ trips = trips.rename(columns={"trip_headsign": "num"})  # D2 : le numéro de tra
 
 # Premier départ et dernière arrivée de chaque trajet, d'après stop_times.txt
 stop_times = pd.read_csv(GTFS_DIR / "stop_times.txt", dtype=str,
-                         usecols=["trip_id", "arrival_time", "departure_time", "stop_sequence"])
+                         usecols=["trip_id", "arrival_time", "departure_time", "stop_id", "stop_sequence"])
 stop_times = stop_times[stop_times.trip_id.isin(trips.trip_id)]
 stop_times["stop_sequence"] = stop_times["stop_sequence"].astype(int)  # pour trier 10 après 9
 extremites = (stop_times.sort_values(["trip_id", "stop_sequence"])
               .groupby("trip_id")
-              .agg(depart=("departure_time", "first"), arrivee=("arrival_time", "last"))
+              .agg(depart=("departure_time", "first"), arrivee=("arrival_time", "last"),
+                   premier_arret=("stop_id", "first"))
               .reset_index())
 trips = trips.merge(extremites, on="trip_id")
+# Mode de transport, lu dans l'identifiant d'arrêt : 'StopPoint:OCETrain TER-87...' -> 'Train TER'
+# (un car de remplacement apparaîtrait comme 'Car TER' même s'il est rangé sous une ligne ferroviaire)
+trips["mode"] = trips["premier_arret"].str.extract(r"OCE(.*?)-", expand=False)
 
 calendar = pd.read_csv(GTFS_DIR / "calendar.txt", dtype=str)
 calendar_dates = pd.read_csv(GTFS_DIR / "calendar_dates.txt", dtype=str)
@@ -81,7 +85,7 @@ def trains_du_jour(jour):
     du_jour["depart"] = minuit + pd.to_timedelta(du_jour["depart"])
     du_jour["arrivee"] = minuit + pd.to_timedelta(du_jour["arrivee"])
     du_jour["date"] = jour.strftime("%Y%m%d")  # date de circulation, au format du flux (start_date)
-    return du_jour[["num", "date", "route_short_name", "depart", "arrivee"]]
+    return du_jour[["num", "date", "route_short_name", "mode", "depart", "arrivee"]]
 
 
 def numero_train(trip_id):
@@ -90,9 +94,20 @@ def numero_train(trip_id):
     return m.group(1) if m else None
 
 
+def trace(num, dates_par_num, ids_du_flux):
+    """Cherche si un train absent apparaît quand même dans la photo, sous une autre forme."""
+    if num in dates_par_num:  # même numéro, mais avec une autre date de circulation
+        return "autre date : " + ", ".join(sorted(dates_par_num[num]))
+    # Le numéro écrit seul (pas au milieu d'un nombre plus long) dans un trip_id d'un autre format
+    motif = re.compile(rf"(?<!\d){num}(?!\d)")
+    trouves = [tid for tid in ids_du_flux if motif.search(tid)]
+    return "trip_id : " + trouves[0] if trouves else ""
+
+
 Statut = gtfs_realtime_pb2.TripDescriptor.ScheduleRelationship
 resume = []
 tous_absents = []  # trains absents de chaque photo, rassemblés pour le fichier CSV final
+tous_prevus = []   # trains prévus de chaque photo, pour la couverture par ligne
 
 for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
     feed = gtfs_realtime_pb2.FeedMessage()
@@ -119,12 +134,18 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
     # 3. Trains présents dans la photo : dictionnaire (numéro, date) -> statut
     # -----------------------------------------------------------------------
     presents = {}
+    ids_du_flux = []  # tous les trip_id de la photo, pour chercher la trace des absents
     for entite in feed.entity:
         if entite.HasField("trip_update"):
             trip = entite.trip_update.trip
+            ids_du_flux.append(trip.trip_id)
             num = numero_train(trip.trip_id)
             if num is not None:
                 presents[(num, trip.start_date)] = Statut.Name(trip.schedule_relationship)
+    # Pour chaque numéro vu dans la photo, les dates de circulation sous lesquelles il apparaît
+    dates_par_num = {}
+    for num, date in presents:
+        dates_par_num.setdefault(num, set()).add(date)
 
     # -----------------------------------------------------------------------
     # 4. Numérateur : trains prévus retrouvés dans la photo (jointure D2 : numéro + date)
@@ -133,6 +154,8 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
     prevus = prevus.assign(statut=[presents.get(cle) for cle in cles])  # None si absent
     couverts = prevus[prevus.statut.notna()]
     absents = prevus[prevus.statut.isna()]
+    absents = absents.assign(trace_dans_flux=[trace(num, dates_par_num, ids_du_flux) for num in absents.num])
+    tous_prevus.append(prevus)
     # Contrôle de D3 : trains HdF du jour présents dans la photo mais hors de la fenêtre
     cles_du_jour = set(zip(prevus_jour.num, prevus_jour.date))
     cles_prevues = set(cles)
@@ -145,6 +168,8 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
     print(f"     statuts : {couverts.statut.value_counts().to_dict()}")
     print(f"  dont absents du flux         : {len(absents)}")
     print(f"     lignes les plus touchées : {absents.route_short_name.value_counts().head(5).to_dict()}")
+    print(f"     mode (train ou car)      : {absents['mode'].value_counts().to_dict()}")
+    print(f"     trace dans le flux       : {(absents.trace_dans_flux != '').sum()} sur {len(absents)}")
     print(f"Trains HdF du flux hors fenêtre D3 : {hors_fenetre}")
     print(f"Doublons numéro + date écartés     : {doublons}")
     resume.append({"photo": f"{t_photo:%d/%m %H:%M}", "prevus": len(prevus),
@@ -157,9 +182,20 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
 print("\n=== Résumé ===")
 print(pd.DataFrame(resume).to_string(index=False))
 
+# Couverture par ligne, toutes photos confondues : une ligne absente en bloc du flux
+# (couverture proche de 0 %) ne s'interprète pas comme une ligne à moitié couverte
+if tous_prevus:
+    par_ligne = (pd.concat(tous_prevus)
+                 .groupby("route_short_name")
+                 .agg(prevus=("num", "size"), presents=("statut", "count")))  # count ignore les vides
+    par_ligne["taux"] = par_ligne.presents / par_ligne.prevus
+    par_ligne["couverture"] = par_ligne.taux.map("{:.0%}".format)  # 0.8 -> '80%'
+    print("\n=== Couverture par ligne (les 15 plus faibles) ===")
+    print(par_ligne.sort_values("taux").drop(columns="taux").head(15).to_string())
+
 # Liste détaillée des absents, à ouvrir dans un tableur pour les examiner un par un
 if tous_absents:
     fichier_absents = RACINE / "data" / "phase0_absents.csv"
-    colonnes = ["photo", "route_short_name", "num", "date", "depart", "arrivee"]
+    colonnes = ["photo", "route_short_name", "mode", "num", "date", "depart", "arrivee", "trace_dans_flux"]
     pd.concat(tous_absents)[colonnes].to_csv(fichier_absents, index=False)
     print(f"\nTrains absents enregistrés dans {fichier_absents}")
