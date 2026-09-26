@@ -8,6 +8,8 @@ Pour chaque photo déjà enregistrée dans data/snapshots/ :
     leur statut (un train CANCELED présent dans le flux compte comme couvert) ;
   - les deux sources sont reliées par numéro de train + date de circulation (D2).
 
+La liste des trains prévus mais absents est enregistrée dans data/phase0_absents.csv.
+
 Lancement :  python src/phase0_couverture.py   (aucun téléchargement)
 """
 import re
@@ -50,6 +52,10 @@ trips = trips.merge(extremites, on="trip_id")
 calendar = pd.read_csv(GTFS_DIR / "calendar.txt", dtype=str)
 calendar_dates = pd.read_csv(GTFS_DIR / "calendar_dates.txt", dtype=str)
 
+# Le GTFS est une fenêtre glissante (~90 jours) : on affiche la version utilisée
+feed_info = pd.read_csv(GTFS_DIR / "feed_info.txt", dtype=str)
+print("Version du GTFS régional :", feed_info.iloc[0].to_dict())
+
 
 def services_actifs(jour):
     """Ensemble des service_id qui circulent le jour donné."""
@@ -86,6 +92,7 @@ def numero_train(trip_id):
 
 Statut = gtfs_realtime_pb2.TripDescriptor.ScheduleRelationship
 resume = []
+tous_absents = []  # trains absents de chaque photo, rassemblés pour le fichier CSV final
 
 for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
     feed = gtfs_realtime_pb2.FeedMessage()
@@ -98,7 +105,12 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
     # -----------------------------------------------------------------------
     # On inclut la veille : un train parti avant minuit peut encore rouler (heures > 24:00)
     prevus_jour = pd.concat([trains_du_jour(jour - pd.Timedelta(days=1)), trains_du_jour(jour)])
-    prevus = prevus_jour[(prevus_jour.depart <= t_photo + FENETRE) & (prevus_jour.arrivee >= t_photo)]
+    if prevus_jour.empty:
+        print(f"\n=== Photo du {t_photo:%d/%m à %H:%M} (heure de Paris) ===")
+        print("Aucun train HdF prévu dans le GTFS pour cette date : la version du GTFS"
+              " ne la couvre pas (fenêtre glissante). Photo ignorée.")
+        continue
+    prevus =prevus_jour[(prevus_jour.depart <= t_photo + FENETRE) & (prevus_jour.arrivee >= t_photo)]
     # Un même numéro + date décrit deux fois dans le GTFS ne doit compter qu'une fois
     doublons = prevus.duplicated(["num", "date"]).sum()
     prevus = prevus.drop_duplicates(["num", "date"])
@@ -137,6 +149,17 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
     print(f"Doublons numéro + date écartés     : {doublons}")
     resume.append({"photo": f"{t_photo:%d/%m %H:%M}", "prevus": len(prevus),
                    "presents": len(couverts), "couverture": f"{couverture:.0%}"})
+    # Heures converties en texte lisible (sinon le CSV contiendrait « 2026-09-23 12:35:00+02:00 »)
+    tous_absents.append(absents.assign(photo=f"{t_photo:%d/%m %H:%M}",
+                                       depart=absents.depart.dt.strftime("%d/%m %H:%M"),
+                                       arrivee=absents.arrivee.dt.strftime("%d/%m %H:%M")))
 
 print("\n=== Résumé ===")
 print(pd.DataFrame(resume).to_string(index=False))
+
+# Liste détaillée des absents, à ouvrir dans un tableur pour les examiner un par un
+if tous_absents:
+    fichier_absents = RACINE / "data" / "phase0_absents.csv"
+    colonnes = ["photo", "route_short_name", "num", "date", "depart", "arrivee"]
+    pd.concat(tous_absents)[colonnes].to_csv(fichier_absents, index=False)
+    print(f"\nTrains absents enregistrés dans {fichier_absents}")
