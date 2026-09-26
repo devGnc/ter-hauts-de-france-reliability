@@ -14,7 +14,7 @@ Ce journal alimente la section *Method* du README.
 
 ## D2 — Clé de trajet
 
-- **Retenu :** numéro de train + date de circulation. Le numéro de train figure dans `trip_headsign` (`trip_short_name` est vide) et s'extrait du `trip_id` par le motif `OCESN(\d+)`.
+- **Retenu :** numéro de train + date de circulation. Le numéro de train figure dans `trip_headsign` (`trip_short_name` est vide) et s'extrait du `trip_id` par le motif `OCE[A-Z]{2}(\d+)` : préfixe `OCESN` pour l'agence 1187, `OCEEA` pour l'agence 5235 (lignes picardes). Le premier motif, `OCESN(\d+)`, ratait toutes les lignes de l'agence 5235 (constaté en phase 0, 27/09).
 - **Écarté :** `trip_id` seul. Il contient un horodatage d'export (ex. `OCESN16350F8784835:2026-09-22T17:41:41Z`, 25 horodatages distincts dans un seul fichier) et change donc d'une version du GTFS à l'autre.
 - **Raison :** une jointure sur un identifiant instable perdrait des trains sans erreur visible.
 - **Statut :** provisoire, à valider contre le flux temps réel en phase 0 (voir `docs/phase0_feasibility.md`).
