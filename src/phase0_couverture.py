@@ -3,7 +3,7 @@ Phase 0 — Mesurer la couverture du flux GTFS-RT pour les TER Hauts-de-France.
 
 Pour chaque photo déjà enregistrée dans data/snapshots/ :
   - dénominateur : trains HdF prévus à l'heure de la photo, selon D3
-    (en circulation, ou départ dans l'heure qui suit) ;
+    (en circulation, ou départ dans l'heure qui suit), cars de remplacement exclus (D4) ;
   - numérateur : parmi eux, ceux qui apparaissent dans la photo, quel que soit
     leur statut (un train CANCELED présent dans le flux compte comme couvert) ;
   - les deux sources sont reliées par numéro de train + date de circulation (D2).
@@ -130,6 +130,11 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
               " ne la couvre pas (fenêtre glissante). Photo ignorée.")
         continue
     prevus =prevus_jour[(prevus_jour.depart <= t_photo + FENETRE) & (prevus_jour.arrivee >= t_photo)]
+    # D4 : les cars de remplacement ne sont pas des trains, et le flux ne les suit pas.
+    # On les retire du dénominateur, mais on les compte pour le signaler.
+    est_car = prevus["mode"].str.startswith("Car", na=False)
+    cars_exclus = est_car.sum()
+    prevus = prevus[~est_car]
     # Un même numéro + date décrit deux fois dans le GTFS ne doit compter qu'une fois
     doublons = prevus.duplicated(["num", "date"]).sum()
     prevus = prevus.drop_duplicates(["num", "date"])
@@ -167,6 +172,7 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
 
     couverture = len(couverts) / len(prevus) if len(prevus) else float("nan")
     print(f"\n=== Photo du {t_photo:%d/%m à %H:%M} (heure de Paris) ===")
+    print(f"Cars de remplacement exclus (D4) : {cars_exclus}")
     print(f"Trains HdF prévus (D3)         : {len(prevus)}")
     print(f"  dont présents dans le flux   : {len(couverts)}  -> couverture {couverture:.0%}")
     print(f"     statuts : {couverts.statut.value_counts().to_dict()}")

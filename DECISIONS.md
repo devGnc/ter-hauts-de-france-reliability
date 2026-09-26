@@ -25,3 +25,10 @@ Ce journal alimente la section *Method* du README.
 - **Écarté :** trains en circulation uniquement. Sur 5 observations (23 au 26/09), 33 à 44 % des trains du flux n'étaient pas encore partis, tous dans les 60 min : les exclure du dénominateur gonflerait la couverture d'environ 60 %.
 - **Raison :** le dénominateur doit correspondre à ce que le flux montre réellement. Fenêtre mesurée avec `src/phase0_fenetre_flux.py` ; elle confirme la documentation (« trains des 60 prochaines minutes »).
 - **Limite :** les trains restent visibles 4 à 5 min après leur arrivée ; effet négligeable, non intégré. Mesure faite sur tous les trains de France, à confirmer pour les TER HdF.
+
+## D4 — Cars de remplacement
+
+- **Retenu :** les services assurés par car (mode `Car TER` dans l'identifiant d'arrêt du GTFS), même rangés sous une ligne ferroviaire, sont exclus des trains prévus. Seuls les trains sont mesurés.
+- **Écarté :** les garder comme trains prévus absents. Le flux temps réel ne suit pas les cars : sur 3 observations (25 et 26/09), les 12 absents étaient tous des cars, sans aucune trace dans le flux. Ils seraient toujours comptés comme données manquantes.
+- **Raison :** le projet porte sur la fiabilité des trains ; un car prévu au plan de transport n'est pas un train.
+- **Limite :** les services par car (travaux) ne sont pas mesurés, à signaler dans les limites. Question ouverte pour la phase 3 : un train remplacé par un car compte-t-il comme une suppression pour le voyageur ?
