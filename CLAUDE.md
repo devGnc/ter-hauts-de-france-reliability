@@ -20,6 +20,7 @@ Cadrage conseil : la Région est un client fictif. Le projet se conclut par 3 re
 - Aucune donnée brute commitée (licence ODbL, licence régionale non spécifiée). Aucun identifiant dans le code : tout passe par des variables d'environnement (`.env`, voir `.env.example`).
 - Chaque décision va dans `DECISIONS.md` : option retenue, alternatives écartées, raison, en 2 à 4 lignes.
 - README en anglais. Code, commentaires et documents internes en français.
+- **Commits :** auteur `Devrim Genc <144224875+devGnc@users.noreply.github.com>` (configuré dans le `git config` du dépôt ; le vérifier au début de chaque session). Messages en anglais, commits petits et explicites. **Aucun trailer** dans les messages : ni `Co-Authored-By`, ni `Claude-Session`.
 
 ## Sources
 
