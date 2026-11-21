@@ -143,6 +143,7 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
     # 3. Trains présents dans la photo : dictionnaire (numéro, date) -> statut
     # -----------------------------------------------------------------------
     presents = {}
+    octets = {}       # (numéro, date) -> taille de l'entité dans la photo, pour le calcul de stockage
     ids_du_flux = []  # tous les trip_id de la photo, pour chercher la trace des absents
     for entite in feed.entity:
         if entite.HasField("trip_update"):
@@ -151,6 +152,7 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
             num = numero_train(trip.trip_id)
             if num is not None:
                 presents[(num, trip.start_date)] = Statut.Name(trip.schedule_relationship)
+                octets[(num, trip.start_date)] = entite.ByteSize()  # taille encodée, en octets
     # Pour chaque numéro vu dans la photo, les dates de circulation sous lesquelles il apparaît
     dates_par_num = {}
     for num, date in presents:
@@ -169,6 +171,9 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
     cles_du_jour = set(zip(prevus_jour.num, prevus_jour.date))
     cles_prevues = set(cles)
     hors_fenetre = sum(1 for cle in presents if cle in cles_du_jour and cle not in cles_prevues)
+    # Stockage : part de la photo occupée par les trains HdF du jour (dans la fenêtre ou non)
+    taille_photo = fichier.stat().st_size
+    octets_hdf = sum(taille for cle, taille in octets.items() if cle in cles_du_jour)
 
     couverture = len(couverts) / len(prevus) if len(prevus) else float("nan")
     print(f"\n=== Photo du {t_photo:%d/%m à %H:%M} (heure de Paris) ===")
@@ -182,8 +187,11 @@ for fichier in sorted(SNAPSHOTS_DIR.glob("*.pb")):
     print(f"     trace dans le flux       : {(absents.trace_dans_flux != '').sum()} sur {len(absents)}")
     print(f"Trains HdF du flux hors fenêtre D3 : {hors_fenetre}")
     print(f"Doublons numéro + date écartés     : {doublons}")
+    print(f"Taille de la photo                 : {taille_photo / 1024:.0f} Ko, "
+          f"dont trains HdF {octets_hdf / 1024:.0f} Ko ({octets_hdf / taille_photo:.1%})")
     resume.append({"photo": f"{t_photo:%d/%m %H:%M}", "prevus": len(prevus),
-                   "presents": len(couverts), "couverture": f"{couverture:.0%}"})
+                   "presents": len(couverts), "couverture": f"{couverture:.0%}",
+                   "taille_ko": round(taille_photo / 1024), "part_hdf": f"{octets_hdf / taille_photo:.1%}"})
     # Heures converties en texte lisible (sinon le CSV contiendrait « 2026-09-23 12:35:00+02:00 »)
     tous_absents.append(absents.assign(photo=f"{t_photo:%d/%m %H:%M}",
                                        depart=absents.depart.dt.strftime("%d/%m %H:%M"),
