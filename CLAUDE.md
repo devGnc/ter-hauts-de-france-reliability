@@ -19,7 +19,7 @@ Cadrage conseil : la Région est un client fictif. Le projet se conclut par 3 re
 - **Ne jamais construire les phases suivantes à l'avance.** Les choix ouverts appartiennent à l'auteur : quelle observation fait foi, définition d'un train supprimé, seuils, trous de collecte, etc. Proposer des options, ne pas trancher.
 - Aucune donnée brute commitée (licence ODbL, licence régionale non spécifiée). Aucun identifiant dans le code : tout passe par des variables d'environnement (`.env`, voir `.env.example`).
 - Chaque décision va dans `DECISIONS.md` : option retenue, alternatives écartées, raison, en 2 à 4 lignes.
-- README en anglais. Code, commentaires et documents internes en français.
+- README, `DECISIONS.md` et `docs/` en anglais (nombres au format anglais : 26.0, 1,200). Code, commentaires et ce fichier en français.
 - **Commits :** auteur `Devrim Genc <144224875+devGnc@users.noreply.github.com>` (configuré dans le `git config` du dépôt ; le vérifier au début de chaque session). Messages en anglais, commits petits et explicites. **Aucun trailer** dans les messages : ni `Co-Authored-By`, ni `Claude-Session`.
 
 ## Sources
@@ -52,19 +52,21 @@ Détail complet : `DECISIONS.md`.
 
 ## Phase en cours
 
-**Phase 0 — Test de faisabilité** (fin septembre – début octobre 2026).
-Script : `src/phase0_lire_flux.py`. Rapport à remplir : `docs/phase0_feasibility.md`. Livrable : une décision go / no-go écrite.
+**Phase 0 — Test de faisabilité** (septembre – novembre 2026).
+Scripts : `src/phase0_lire_flux.py` (une photo), `src/phase0_fenetre_flux.py` (fenêtre du flux), `src/phase0_couverture.py` (couverture). Rapport : `docs/phase0_feasibility.md`, rédigé avec la série 1 (23–26/09 : 404/404 trains HdF prévus présents). Restent : la série 2 de mesures sur le GTFS actuel (pointes de semaine, heure creuse, week-end), puis la décision go / no-go de l'auteur, et son choix d'intervalle de collecte et d'hébergement (section 7 du rapport : intervalle ≤ 4 min nécessaire pour voir chaque train après son arrivée).
 En cas de no-go : examiner le flux SIRI ET Lite et un éventuel flux régional, puis, en dernier recours, basculer sur une comparaison des régions à partir des données mensuelles.
+
+**Environnement cloud :** l'environnement « ter-hauts-de-france-reliability » autorise proxy.transport.data.gouv.fr, transport.data.gouv.fr et eu.ftp.opendatasoft.com. L'environnement par défaut bloque ces sources : démarrer les sessions qui ont besoin du flux sur le premier.
 
 ## Calendrier
 
 | Période | Phase |
 | --- | --- |
-| Fin septembre – début octobre | 0 : faisabilité, go / no-go |
-| Octobre | 1 : référentiel statique en base |
-| Mi-octobre – mi-décembre | 2 : collecte continue (4 semaines min., idéalement 8) |
-| Novembre – décembre | 3 et 4 : transformations, analyses SQL |
-| Décembre – début janvier | 5 : Power BI ; 6 : recommandations, README, note de synthèse, pitch de 2 min |
+| Septembre – novembre 2026 | 0 : faisabilité, go / no-go |
+| Avant le début de la collecte | 1 : référentiel statique en base |
+| Décembre 2026 – janvier 2027 | 2 : collecte continue (4 semaines min., idéalement 8) ; changement de service annuel la nuit du 12 au 13/12/2026 |
+| Pendant et après la collecte | 3 et 4 : transformations, analyses SQL |
+| Après la collecte (début 2027) | 5 : Power BI ; 6 : recommandations, README, note de synthèse, pitch de 2 min |
 
 ## Arborescence
 
