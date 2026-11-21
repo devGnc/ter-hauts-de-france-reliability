@@ -57,6 +57,8 @@ Design decisions are logged in [`DECISIONS.md`](DECISIONS.md). So far:
 
 - **Scope (D1):** 65 rail lines from the regional GTFS. Coach lines and lines likely run by TER Grand Est are excluded.
 - **Trip key (D2):** train number + service date, because GTFS `trip_id`s change between exports.
+- **Scheduled train (D3):** a train counts as scheduled at time T if it is running or departs within the next 60 minutes, which matches what the feed shows.
+- **Replacement coaches (D4):** coach services are excluded; only trains are measured.
 
 ## Key findings
 
@@ -112,5 +114,7 @@ python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env             # then fill in the values
-python src/phase0_lire_flux.py
+python src/phase0_lire_flux.py   # one snapshot of the feed (needs data/gtfs_region/)
+python src/phase0_fenetre_flux.py   # time window shown by the feed, from saved snapshots
+python src/phase0_couverture.py     # coverage of scheduled HdF trains, from saved snapshots
 ```
