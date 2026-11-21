@@ -1,3 +1,3 @@
-# Rapport de qualité des données
+# Data quality report
 
-*À rédiger à partir de la phase 2 : période couverte, trous de collecte, taux de correspondance entre trains prévus et observés, écart avec le chiffre officiel de régularité.*
+*To be written from phase 2 onwards: period covered, collection gaps, match rate between scheduled and observed trains, gap with the official punctuality figure.*
