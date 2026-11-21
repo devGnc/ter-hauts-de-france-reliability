@@ -2,7 +2,7 @@
 
 Line-by-line reliability of TER Hauts-de-France trains, rebuilt from archived SNCF real-time data (Python, PostgreSQL, Power BI).
 
-> 🚧 **Work in progress.** Phase 0 (feasibility) is underway. See [Project status](#project-status).
+> 🚧 **Work in progress.** The phase 0 feasibility report is written; the go / no-go decision is pending. Data collection is planned from December 2026 to January 2027. See [Project status](#project-status).
 
 ## Context & question
 
@@ -68,19 +68,30 @@ Design decisions are logged in [`DECISIONS.md`](DECISIONS.md). So far:
 
 ## Limitations
 
-- **Short observation window:** 4 to 8 weeks in autumn 2026, so the results are not representative of a full year.
+- **Short observation window:** 4 to 8 weeks between December 2026 and January 2027, a period that includes the Christmas holidays and the annual timetable change (12–13 December 2026). The results are not representative of a full year.
 - **Feed coverage:** a scheduled train missing from the feed is treated as missing data, not as on time. The match rate between scheduled and observed trains is tracked. The feed has known quality issues.
+- **Coach services:** replacement coaches are not tracked by the real-time feed and are excluded (D4).
 - **Scope:** the attribution of a few lines serving the Aisne department is still to be confirmed (see D1).
 
 ## Project status
 
-- [ ] **Phase 0:** Feasibility test and go / no-go decision ([report](docs/phase0_feasibility.md))
+- [ ] **Phase 0:** Feasibility test and go / no-go decision ([report](docs/phase0_feasibility.md): written, decision pending)
 - [ ] **Phase 1:** Static reference data in PostgreSQL
 - [ ] **Phase 2:** Automated collection (4 weeks minimum)
-- [ ] **Phase 3:** Transformation and validation against official figures ([data quality report](docs/data_quality.md))
+- [ ] **Phase 3:** Transformation and validation against official figures (data quality report written in this phase)
 - [ ] **Phase 4:** SQL analysis
 - [ ] **Phase 5:** Power BI dashboard
 - [ ] **Phase 6:** Recommendations and publication
+
+### Timeline
+
+| Phase | Planned |
+| --- | --- |
+| 0 — Feasibility | September–November 2026. Round 1 done; round 2 measurements and decision pending |
+| 1 — Reference data | Before collection starts |
+| 2 — Collection | December 2026 – January 2027 (4 weeks minimum, ideally 8) |
+| 3–4 — Transformation and analysis | Built on the first weeks of data, finalised after collection |
+| 5–6 — Dashboard and recommendations | After collection ends (early 2027) |
 
 ## Repository layout
 
