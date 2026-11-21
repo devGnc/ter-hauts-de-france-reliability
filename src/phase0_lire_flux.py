@@ -58,16 +58,18 @@ for entite in feed.entity:
         continue
     tu = entite.trip_update
     dernier = tu.stop_time_update[-1] if tu.stop_time_update else None
+    # Arrivée au dernier arrêt (terminus), si elle existe : delay et time y sont optionnels
+    arrivee = dernier.arrival if dernier is not None and dernier.HasField("arrival") else None
     lignes.append({
         "trip_id": tu.trip.trip_id,
         "start_date": tu.trip.start_date,
         "statut": Statut.Name(tu.trip.schedule_relationship),  # SCHEDULED, CANCELED...
         "nb_arrets_maj": len(tu.stop_time_update),
-        # Le champ delay est optionnel : on vérifie s'il est rempli avant de le lire
+        # On vérifie qu'un champ est rempli avant de le lire (sinon protobuf renvoie 0)
+        "delay_renseigne": arrivee is not None and arrivee.HasField("delay"),
+        "time_renseigne": arrivee is not None and arrivee.HasField("time"),
         "retard_dernier_arret_s": (
-            dernier.arrival.delay
-            if dernier is not None and dernier.HasField("arrival") and dernier.arrival.HasField("delay")
-            else None
+            arrivee.delay if arrivee is not None and arrivee.HasField("delay") else None
         ),
     })
 rt = pd.DataFrame(lignes)
@@ -101,6 +103,20 @@ print("Statuts :", rt["statut"].value_counts().to_dict())
 print("trip_id sans numéro extractible :", rt["num_train"].isna().sum())
 print("Correspondance exacte sur trip_id :", rt["match_trip_id"].sum())
 print("Correspondance sur numéro de train :", rt["match_num_train"].sum())
-print("Delay renseigné (part des trains) :", round(rt["retard_dernier_arret_s"].notna().mean(), 2))
+
+
+def renseignement(df, titre):
+    """Affiche, pour l'arrivée au dernier arrêt, la part des trains avec delay, time, ou aucun des deux."""
+    delay, time_ = df["delay_renseigne"], df["time_renseigne"]
+    print(f"\n{titre} ({len(df)} trains), arrivée au dernier arrêt :")
+    print(f"  delay renseigné      : {delay.mean():.1%}")
+    print(f"  time renseigné       : {time_.mean():.1%}")
+    print(f"  ni l'un ni l'autre   : {(~delay & ~time_).mean():.1%}")
+    # Un retard exactement nul peut signifier « à l'heure » ou « pas d'information » (cf. phase 0)
+    print(f"  delay exactement nul : {(df.loc[delay, 'retard_dernier_arret_s'] == 0).mean():.1%} des delay renseignés")
+
+
+renseignement(rt, "Tous les trains du flux")
+renseignement(rt[rt["match_num_train"]], "Trains HdF (reconnus par numéro, sans contrôle de date)")
 
 print("\nExemples de trip_id du flux :", rt["trip_id"].head(5).tolist())
