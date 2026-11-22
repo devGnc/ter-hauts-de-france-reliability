@@ -51,7 +51,7 @@ Détail complet : `DECISIONS.md`.
 - **Stockage :** dimensionner dès la phase 0 par rapport aux 500 Mo de Supabase.
 - **GTFS en fenêtre glissante :** le GTFS régional couvre ~90 jours à partir de sa date de publication ; les jours passés en sortent. Archiver chaque version (`data/gtfs_archive/`).
 - **Suppressions effacées après coup :** une version plus récente du GTFS retire les trains supprimés (constaté : 8 `CANCELED` → 1 pour le 25/09 18 h). Un GTFS publié après les faits sous-estime les suppressions : choisir quelle version fait foi (décision à venir).
-- **Fin de l'essai Google Cloud (~20/02/2027) :** la VM s'arrête si le compte n'est pas passé en compte payant. Le faire avant mi-février (sans coût tant qu'on reste dans l'offre gratuite). Vérifier aussi, quelques jours après la création, si l'adresse IP publique est facturée (rapport de facturation).
+- **Fin de l'essai Google Cloud (~20/02/2027, date exacte dans Facturation → Vue d'ensemble) :** ne **jamais** passer en compte payant (seul moyen d'être débité). Collecte terminée vers le 07/02, données rapatriées puis VM supprimée avant la fin de l'essai ; sinon Google arrête la VM sans débiter. Seul le projet « Collecteur TER » est relié à la facturation (vérifié le 22/11).
 - **Qualité du flux :** le validateur de transport.data.gouv.fr signalait de nombreuses erreurs sur le flux national (mars 2026). Prévoir du nettoyage.
 
 ## Phase en cours
