@@ -2,7 +2,7 @@
 
 ## Le projet
 
-Projet de portfolio data d'un étudiant (EDHEC PGE, double diplôme Centrale Lille), à présenter début janvier 2027 pour un stage à l'étranger.
+Projet de portfolio data d'un étudiant (EDHEC PGE, double diplôme Centrale Lille), lié à la recherche d'un stage à l'étranger (été 2027). **Livrable V1 avant fin janvier 2027**, période de publication des offres « summer 2027 » ; V2 mise à jour en février.
 
 **Question centrale :** quelles lignes TER Hauts-de-France sont les moins fiables, à quels moments, et où la Région devrait-elle concentrer ses efforts ?
 Cadrage conseil : la Région est un client fictif. Le projet se conclut par 3 recommandations chiffrées au maximum.
@@ -36,6 +36,7 @@ Cadrage conseil : la Région est un client fictif. Le projet se conclut par 3 re
 - **D3 — Train prévu à l'instant T :** en circulation (départ ≤ T ≤ arrivée, horaires théoriques) ou départ dans l'heure qui suit (T < départ ≤ T + 60 min). Fenêtre mesurée sur 5 observations avec `src/phase0_fenetre_flux.py` (33 à 44 % des trains du flux pas encore partis ; trains visibles 4 à 5 min après l'arrivée, non intégré).
 - **D4 — Cars de remplacement :** les trajets dont le mode est `Car TER` (lu dans le `stop_id` du GTFS) sont exclus des trains prévus, même sous une ligne ferroviaire : le flux ne suit presque pas les cars (1 sur 13 observés).
 - **D5 — Intervalle de collecte :** une photo toutes les 2 min (les trains quittent le flux 4 à 5 min après leur arrivée ; le flux est rafraîchi toutes les 2 min selon sa documentation). Hébergement non décidé.
+- **D6 — Vacances de Noël et gel V1 :** collecte sans interruption dès le 13/12 ; chaque jour étiqueté (normal, vacances scolaires 19/12–04/01 à confirmer, férié) ; chiffres principaux et recommandations sur les jours normaux, vacances en segment à part. Gel des données V1 le 17/01/2027, collecte poursuivie jusqu'à 8 semaines pour une V2 en février.
 
 Détail complet : `DECISIONS.md`.
 
@@ -63,11 +64,12 @@ En cas de no-go : examiner le flux SIRI ET Lite et un éventuel flux régional, 
 
 | Période | Phase |
 | --- | --- |
-| Septembre – novembre 2026 | 0 : faisabilité, go / no-go |
-| Avant le début de la collecte | 1 : référentiel statique en base |
-| Décembre 2026 – janvier 2027 | 2 : collecte continue (4 semaines min., idéalement 8) ; changement de service annuel la nuit du 12 au 13/12/2026 |
-| Pendant et après la collecte | 3 et 4 : transformations, analyses SQL |
-| Après la collecte (début 2027) | 5 : Power BI ; 6 : recommandations, README, note de synthèse, pitch de 2 min |
+| Novembre – 12/12/2026 | 0 : fin de la série 2, go / no-go ; hébergement ; collecteur testé dès début décembre ; 1 : référentiel statique en base |
+| 13/12/2026 | 2 : début de la collecte, au changement de service annuel (nuit du 12 au 13/12) |
+| 13/12/2026 – 17/01/2027 | 3 et 4 : vues SQL et tableau Power BI construits pendant la collecte, sur les données déjà arrivées |
+| 17/01/2027 | Gel des données de la V1 : 5 semaines, dont environ 3 en période normale (D6) |
+| 18/01 – fin janvier 2027 | 5 et 6 : calculs finaux, 3 recommandations, README, note de synthèse, pitch de 2 min → **V1 publiée** |
+| Jusqu'à ~07/02/2027 | Collecte poursuivie jusqu'à 8 semaines → **V2** mise à jour en février |
 
 ## Arborescence
 

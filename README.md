@@ -2,7 +2,7 @@
 
 Line-by-line reliability of TER Hauts-de-France trains, rebuilt from archived SNCF real-time data (Python, PostgreSQL, Power BI).
 
-> 🚧 **Work in progress.** The phase 0 feasibility report is written; the go / no-go decision is pending. Data collection is planned from December 2026 to January 2027. See [Project status](#project-status).
+> 🚧 **Work in progress.** The phase 0 feasibility report is written; the go / no-go decision is pending. Data collection starts on 13 December 2026; a first version is due by the end of January 2027. See [Project status](#project-status).
 
 ## Context & question
 
@@ -60,6 +60,7 @@ Design decisions are logged in [`DECISIONS.md`](DECISIONS.md). So far:
 - **Scheduled train (D3):** a train counts as scheduled at time T if it is running or departs within the next 60 minutes, which matches what the feed shows.
 - **Replacement coaches (D4):** coach services are excluded; only trains are measured.
 - **Collection interval (D5):** one snapshot every 2 minutes, because trains leave the feed 4 to 5 minutes after arriving.
+- **Christmas holidays (D6):** collected but analysed as a separate segment; headline figures use normal days.
 
 ## Key findings
 
@@ -71,7 +72,7 @@ Design decisions are logged in [`DECISIONS.md`](DECISIONS.md). So far:
 
 ## Limitations
 
-- **Short observation window:** 4 to 8 weeks between December 2026 and January 2027, a period that includes the Christmas holidays and the annual timetable change (12–13 December 2026). The results are not representative of a full year.
+- **Short observation window:** 5 weeks for the first version (13 December 2026 to 17 January 2027), 8 weeks for the update. Collection starts with the annual timetable change, and the Christmas holidays are analysed separately (D6), which leaves about 3 weeks of normal days in the first version. The results are not representative of a full year.
 - **Feed coverage:** a scheduled train missing from the feed is treated as missing data, not as on time. The match rate between scheduled and observed trains is tracked. The feed has known quality issues.
 - **Coach services:** replacement coaches are not tracked by the real-time feed and are excluded (D4).
 - **Scope:** the attribution of a few lines serving the Aisne department is still to be confirmed (see D1).
@@ -90,11 +91,11 @@ Design decisions are logged in [`DECISIONS.md`](DECISIONS.md). So far:
 
 | Phase | Planned |
 | --- | --- |
-| 0 — Feasibility | September–November 2026. Round 1 done; round 2 measurements and decision pending |
+| 0 — Feasibility | September–November 2026. Round 1 done; round 2 weekend done, weekday slots and decision pending |
 | 1 — Reference data | Before collection starts |
-| 2 — Collection | December 2026 – January 2027 (4 weeks minimum, ideally 8) |
-| 3–4 — Transformation and analysis | Built on the first weeks of data, finalised after collection |
-| 5–6 — Dashboard and recommendations | After collection ends (early 2027) |
+| 2 — Collection | From 13 December 2026 (annual timetable change); data frozen for version 1 on 17 January 2027; collection continues to 8 weeks (early February) |
+| 3–4 — Transformation and analysis | Built during collection on the data already collected |
+| 5–6 — Dashboard and recommendations | **Version 1 by the end of January 2027**; version 2 on 8 weeks of data in February |
 
 ## Repository layout
 

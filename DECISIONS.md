@@ -39,3 +39,10 @@ This log feeds the *Method* section of the README.
 - **Rejected:** 3 or 4 min (enough in theory, but a single late or skipped run can lose the post-arrival state of the trains in that window); 5 min and more (only 80% of trains caught after arrival at 5 min if they stay visible 4 min, 40–50% at 10 min); under 2 min (the feed is refreshed every 2 min according to its documentation, so nothing new).
 - **Reason:** trains leave the feed 4 to 5 min after their arrival (−4 to −5 min on all phase 0 snapshots). At 2 min, each train is seen about twice after arriving, which leaves a margin for one missed run. See `docs/phase0_feasibility.md`, section 7.1.
 - **Consequences:** the host, still to be chosen (section 7.2), must actually hold this interval. Raw volume is about 37.7 GiB over 8 weeks (section 4): the storage reduction strategy is still open.
+
+## D6 — Christmas holidays and data freeze for version 1
+
+- **Chosen:** collection runs without a break from 13/12/2026. Each day is labelled: normal period, school holidays (19/12/2026 to 04/01/2027, dates to be confirmed against the official calendar) or public holiday (25/12, 01/01). Headline figures and the 3 recommendations are computed on normal days; the holidays are shown as a separate segment. Data for version 1 is frozen on 17/01/2027 (5 weeks, about 3 of them normal); collection continues to 8 weeks for a version 2 in February.
+- **Rejected:** stopping collection during the holidays (data not collected is lost for good); mixing the holidays into the headline figures (lighter, less commuter-heavy traffic would blur the picture for the Region's daily users); freezing on 24/01 (one more normal week, but too little time to deliver by the end of January).
+- **Reason:** the deliverable must be ready by the end of January 2027, when "summer 2027" internship offers are published. Excluding the holidays is only a filter in the SQL views, so it stays reversible.
+- **Limitation:** about 15 normal weekdays in version 1: enough for the main lines, thin for little-served lines split by time slot. Version 2 addresses this. The exact filtering rule is written in phase 3.
