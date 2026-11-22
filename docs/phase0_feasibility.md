@@ -7,11 +7,18 @@
 | Round | Dates | Status |
 | --- | --- | --- |
 | 1 | 23–26 September 2026, 5 snapshots | Done |
-| 2 | November–December 2026, on the current timetable | **To do** (see [section 6](#6-measurements-still-to-do)) |
+| 2 | November–December 2026, on the current timetable | **In progress:** weekend done (Sun 22/11, 2 snapshots), weekday slots to do (see [section 6](#6-measurements-still-to-do)) |
 
-A weekend re-measurement was planned for 21 November 2026 but could not be run: the cloud session used to prepare this report had no network access to the data sources.
+The weekend measurement planned for 21 November 2026 could not be run from the cloud session (no network access to the data sources). It was run locally on Sunday 22 November.
 
-**Regional GTFS version used for coverage:** `feed_version` 2026-09-25 (valid 25/09/2026 to 24/12/2026). The first version, downloaded on 23/09, was overwritten, so the 23/09 and 24/09 snapshots cannot be re-evaluated with the final method (see [section 5](#5-pitfalls-found-during-phase-0)).
+**Regional GTFS versions used for coverage**
+
+| Round | `feed_version` | Valid | Downloaded | Archive (local, not committed) |
+| --- | --- | --- | --- | --- |
+| 1 | 2026-09-25 | 25/09/2026 to 24/12/2026 | 26/09/2026 | `data/gtfs_archive/gtfs_region_20260926.zip` |
+| 2 | 2026-11-21 | 21/11/2026 to 19/02/2027 | 22/11/2026 | `data/gtfs_archive/gtfs_region_20261122.zip` |
+
+For round 1, the first version, downloaded on 23/09, was overwritten, so the 23/09 and 24/09 snapshots cannot be re-evaluated with the final method (see [section 5](#5-pitfalls-found-during-phase-0)). With the round 2 GTFS in `data/gtfs_region/`, the round 1 snapshots fall outside its window and `phase0_couverture.py` skips them.
 
 **Scripts**
 
@@ -20,6 +27,7 @@ A weekend re-measurement was planned for 21 November 2026 but could not be run: 
 | `src/phase0_lire_flux.py` | Downloads one snapshot of the feed, decodes it, checks the `trip_id` / train number match and the delay fields |
 | `src/phase0_fenetre_flux.py` | Measures which trains the feed shows, relative to the snapshot time (decision D3) |
 | `src/phase0_couverture.py` | Compares HdF trains scheduled at the snapshot time with those present in the feed |
+| `src/phase0_mesure.sh` | Round 2: runs the three scripts above in one command and saves their outputs in `data/mesures/` |
 
 ---
 
@@ -48,7 +56,21 @@ A weekend re-measurement was planned for 21 November 2026 but could not be run: 
 
 **"Outside the D3 window" column.** These are HdF trains present in the feed but not counted as scheduled at T. They are most likely trains running late, whose *scheduled* arrival has already passed. They do not affect coverage. The 26/09 figure also includes the one coach seen in the feed.
 
-**Finding.** On round 1, every scheduled HdF train was present in the feed. This rests on 3 snapshots: weekday morning peak (07:30–08:30), weekday off-peak and night were not measured with the final method.
+**Round 2 results (GTFS 2026-11-21, same method)**
+
+| Snapshot (Paris time) | Time slot | Coaches excluded (D4) | Scheduled trains | Present | Coverage | HdF trains in feed outside the D3 window |
+| --- | --- | --- | --- | --- | --- | --- |
+| Sun 22/11, 15:58 | Weekend | 5 | 62 | 62 | **100%** | 5 |
+| Sun 22/11, 16:00 | Weekend | 5 | 61 | 61 | **100%** | 4 |
+| Weekday morning peak | | | | | To do | |
+| Weekday off-peak | | | | | To do | |
+| Weekday evening peak | | | | | To do | |
+
+The two weekend snapshots are 2 minutes apart (the second one comes from the first run of `phase0_mesure.sh`): they show almost the same trains and count as one time slot. All 61–62 present trains were `SCHEDULED`.
+
+**Feed window, round 2 (`phase0_fenetre_flux.py`).** 43.6% and 43.8% of the trains in the feed (all of France) had not departed yet, within the 33–44% range of round 1 (D3). 2 trains on each snapshot had a forecast departure more than 1 h later (furthest: +144 min). Round 1 also had a few (0, 0, 1, 6 and 0; furthest +81 min). They are outside the D3 window, so they do not change the denominator.
+
+**Finding.** Every scheduled HdF train was present in the feed: 404 of 404 in round 1 (3 snapshots), 62 of 62 and 61 of 61 on the current timetable (weekend). Weekday morning peak (07:30–08:30), weekday off-peak and evening peak have not yet been measured on the current timetable.
 
 ## 2. `trip_id` / train number match (validation of D2)
 
@@ -61,8 +83,10 @@ A weekend re-measurement was planned for 21 November 2026 but could not be run: 
 | Fri 25/09, 09:39 | 1,309 | 51 | 0 | 110 |
 | Fri 25/09, 18:01 | 2,349 | 96 | 0 | 205 |
 | Sat 26/09, 15:56 | 1,029 | 50 | 0 | 60 |
+| Sun 22/11, 15:58 (round 2) | 1,105 | 0 | 0 | 67 |
+| Sun 22/11, 16:00 (round 2) | 1,114 | 0 | 0 | 65 |
 
-\* Measured with the first pattern `OCESN(\d+)`, before the `OCEEA` fix, and by train number only (no date check). These columns undercount HdF trains. Values with the current pattern: **to do** (round 2).
+\* Round 1: measured with the first pattern `OCESN(\d+)`, before the `OCEEA` fix. These columns undercount HdF trains. Round 2: current pattern `OCE[A-Z]{2}(\d+)`, which extracts a number from every `trip_id` in the feed. In both rounds the last column matches on train number only (no date check). In round 2 it gives the same count as the number + date match of `phase0_couverture.py` (62 + 5 = 67 and 61 + 4 = 65 trains, inside and outside the D3 window).
 
 **The two formats are different.**
 
@@ -72,23 +96,30 @@ A weekend re-measurement was planned for 21 November 2026 but could not be run: 
 | Real-time feed | `OCESN5789F1187_F:ICN:FR:Line::5648ced8-…::87547000:87763607:8:3519:20260923` |
 | Real-time feed, Picardy lines | `OCEEA847505F5235_F:TER:FR:Line::6a7e9883-…::87313510:87313759:8:946:20261211` |
 
-**Conclusion on D2.** Exact `trip_id` matching gives 0 matches on every snapshot. Train number + service date, with the pattern `OCE[A-Z]{2}(\d+)`, finds every scheduled train (section 1). D2 can be marked as validated, with the corrected pattern. Changing its status in `DECISIONS.md` is the owner's decision.
+**Conclusion on D2.** Exact `trip_id` matching gives 0 matches on every snapshot. Train number + service date, with the pattern `OCE[A-Z]{2}(\d+)`, finds every scheduled train (section 1: 404 of 404 in round 1, confirmed on the current timetable). **D2 is marked as validated in `DECISIONS.md` (22/11/2026).**
 
 ## 3. Delay fields: `delay` vs `time`
 
 In GTFS-RT, a `StopTimeEvent` can carry a `delay` (in seconds), a `time` (absolute Unix timestamp), or both.
 
-| Indicator (arrival at last stop) | Round 1 | Round 2 |
-| --- | --- | --- |
-| Share of trains with `delay` | ≥ 99.5% on all 5 snapshots (printed as 1.0, rounded to 2 decimals) | To do |
-| Share of trains with `time` | Not measured (the script did not count it then) | To do |
-| Share with neither | Not measured | To do |
-| Share of `delay` exactly 0 | Not measured | To do |
-| Same indicators for HdF trains only | Not measured | To do |
+| Indicator (arrival at last stop) | Round 1 | Round 2, Sun 22/11 15:58 | Round 2, Sun 22/11 16:00 | Round 2, weekdays |
+| --- | --- | --- | --- | --- |
+| **All trains in the feed** | | 1,105 trains | 1,114 trains | |
+| Share with `delay` | ≥ 99.5% on all 5 snapshots (printed as 1.0, rounded to 2 decimals) | 100% (1,105) | 100% (1,114) | To do |
+| Share with `time` | Not measured (the script did not count it then) | 100% (1,105) | 100% (1,114) | To do |
+| Share with neither | Not measured | 0% | 0% | To do |
+| Share of `delay` exactly 0 | Not measured | 84.7% (936 of 1,105) | 84.9% (946 of 1,114) | To do |
+| **HdF trains only*** | Not measured | 67 trains | 65 trains | |
+| Share with `delay` | Not measured | 100% (67) | 100% (65) | To do |
+| Share with `time` | Not measured | 100% (67) | 100% (65) | To do |
+| Share with neither | Not measured | 0% | 0% | To do |
+| Share of `delay` exactly 0 | Not measured | 95.5% (64 of 67) | 95.4% (62 of 65) | To do |
 
-The script now measures all five indicators.
+\* HdF trains recognised by train number (see note under the table of section 2).
 
-**Statuses observed (trip level), round 1**
+On a Sunday afternoon, every train carries both fields at its last stop, and almost all HdF trains show a delay of exactly 0 at the terminus. Whether this 0 means "on time" or "no information" remains open (see below); the weekday slots, especially the peaks, will show whether the share of zeros drops when there is more traffic.
+
+**Statuses observed (trip level)**
 
 | Snapshot (Paris time) | `SCHEDULED` | `ADDED` | `CANCELED` |
 | --- | --- | --- | --- |
@@ -97,6 +128,8 @@ The script now measures all five indicators.
 | Fri 25/09, 09:39 | 1,153 | 130 | 26 |
 | Fri 25/09, 18:01 | 2,089 | 221 | 39 |
 | Sat 26/09, 15:56 | 901 | 122 | 6 |
+| Sun 22/11, 15:58 (round 2) | 961 | 132 | 12 |
+| Sun 22/11, 16:00 (round 2) | 968 | 134 | 12 |
 
 `SKIPPED` also appears at stop level (a stop the train does not serve).
 
@@ -119,6 +152,8 @@ The script now measures all five indicators.
 
 **Snapshot size, round 1:** 947, 766, 852, 1,620 and 717 KiB (mean **980.4 KiB**). The evening peak snapshot is twice as large as the others. Night snapshots were not measured; they are probably smaller, so the mean below likely overestimates a full day.
 
+**Snapshot size, round 2:** 741 and 745 KiB (758,789 and 762,998 bytes) on Sunday 22/11, close to the round 1 Saturday snapshot (717 KiB). The table below still uses the round 1 mean; weekday sizes on the current timetable are **to do**.
+
 **Raw volume** (mean size × snapshots per day × number of days), compared with the Supabase free plan (500 MB per project):
 
 | Interval | Snapshots per day | 4 weeks | 8 weeks | 8 weeks vs 500 MB |
@@ -130,7 +165,9 @@ The script now measures all five indicators.
 | 10 min | 144 | 3.8 GiB | 7.5 GiB | ×15 |
 | 15 min | 96 | 2.5 GiB | 5.0 GiB | ×10 |
 
-**After keeping HdF trains only.** HdF trains made up 9.3%, 10.5% and 6.6% of the entities in the 3 snapshots of section 1. This is a share of *entities*, not of *bytes*. With 10.5% as an upper bound on entities, 8 weeks at a 2-min interval would still be about 4.0 GiB (×8 the quota). The byte share is now measured by `phase0_couverture.py`: **to do** (round 2). The volume once stored as table rows depends on the schema, which will be designed in phase 1.
+**After keeping HdF trains only.** HdF trains made up 9.3%, 10.5% and 6.6% of the entities in the 3 snapshots of section 1. This is a share of *entities*, not of *bytes*. With 10.5% as an upper bound on entities, 8 weeks at a 2-min interval would still be about 4.0 GiB (×8 the quota).
+
+The share of *bytes* is measured by `phase0_couverture.py` (encoded size of the HdF entities divided by the file size). Round 2, Sunday 22/11: **6.0%** (45 of 741 KiB) and **5.8%** (43 of 745 KiB). Applied to the round 1 mean size, 8 weeks at a 2-min interval would be about 2.3 GiB (980.4 KiB × 6.0% × 720 × 56 days), about ×5 the quota. This rests on weekend snapshots only: weekday byte shares are **to do**. The volume once stored as table rows depends on the schema, which will be designed in phase 1.
 
 **Conclusion.** Raw snapshots cannot be stored in the 500 MB database at any interval, and keeping only HdF trains is not enough either. Phase 2 needs a reduction strategy: for example, which fields to keep, whether to store only changes, and where raw files are archived outside the database. That strategy is not decided here.
 
@@ -151,16 +188,24 @@ Round 2, on the current GTFS (download and archive it first):
 | Morning peak, 07:30–08:30 | Weekday | To do |
 | Off-peak, 10:00–15:00 | Weekday | To do |
 | Evening peak, 17:00–19:00 | Weekday | To do |
-| Weekend, any time | Saturday or Sunday | To do (planned 21/11, not run: no network access) |
+| Weekend, any time | Saturday or Sunday | **Done:** Sun 22/11, 15:58 and 16:00 |
 | Night, 23:00–05:00 (for the storage mean) | Any | To do, optional |
 
 For each slot, record: coverage, `delay` / `time` indicators (all trains and HdF), share of `delay` exactly 0, snapshot size, HdF byte share, `trip_id` with no extractable number.
 
-## 7. Collection interval and hosting — **decision pending (owner)**
+**How to run a slot.** The round 2 GTFS (2026-11-21) is already in `data/gtfs_region/`; keep it for the whole round, so that every slot is measured against the same timetable. At each slot, from the repository folder:
+
+```bash
+./src/phase0_mesure.sh
+```
+
+The command takes one snapshot, then prints coverage, delay fields and feed window. Outputs are saved in `data/mesures/` with the date and time in their names. Coverage is recalculated on every saved snapshot, so the summary at the end of the `couverture_*.txt` output grows with each slot. Round 2 must be finished before the timetable change of 12–13 December.
+
+## 7. Collection interval and hosting — **interval decided (D5: 2 min), hosting pending (owner)**
 
 ### 7.1 Why the interval matters
 
-Trains disappear from the feed **4 to 5 minutes after their arrival**. The oldest arrival still visible was −5, −5, −5, −5 and −4 min on the 5 round 1 snapshots. To see each train once *after* it has arrived at the terminus, there must be a snapshot inside that window.
+Trains disappear from the feed **4 to 5 minutes after their arrival**. The oldest arrival still visible was −5, −5, −5, −5 and −4 min on the 5 round 1 snapshots, and −5 and −4 min on the 2 round 2 snapshots (Sunday 22/11). To see each train once *after* it has arrived at the terminus, there must be a snapshot inside that window.
 
 With snapshots every Δ minutes, perfectly on time, the share of trains caught after arrival is min(1, W/Δ), where W is the visibility window:
 
@@ -180,6 +225,8 @@ Three caveats:
 
 **Implication:** an interval of **4 minutes or less**, actually respected, is needed to keep the post-arrival state for every train.
 
+**Decision (owner, 22/11/2026): 2 min** (D5 in `DECISIONS.md`). The host is still to be chosen (7.2) and must actually hold this interval.
+
 ### 7.2 Hosting options for a collector running 24/7 for 4 to 8 weeks
 
 The owner's laptop is ruled out. Figures below come from the providers' pages or, where marked, from third-party sources, as of November 2026. **Check them on the official pages before choosing.**
@@ -197,7 +244,7 @@ The owner's laptop is ruled out. Figures below come from the providers' pages or
 - options D and E are the only ones that can also keep raw files outside the database;
 - collection will run over the 12–13 December timetable change (section 5).
 
-**This choice — interval and host — is left to the project owner.**
+**The interval is decided (D5: 2 min). The host is left to the project owner.**
 
 ## 8. Decision
 
@@ -206,17 +253,16 @@ The owner's laptop is ruled out. Figures below come from the providers' pages or
 
 **Proposed: Go, on conditions.**
 
-**Justification.** On round 1, 404 of 404 scheduled HdF trains were present in the feed (3 snapshots: morning, evening peak, weekend). The trip key D2 works once both `trip_id` prefixes are handled. Delays are available, although they are forecasts that must be handled with care.
+**Justification.** On round 1, 404 of 404 scheduled HdF trains were present in the feed (3 snapshots: morning, evening peak, weekend). On the current timetable, 62 of 62 and 61 of 61 (weekend, round 2). The trip key D2 works once both `trip_id` prefixes are handled. Delays are available, although they are forecasts that must be handled with care.
 
 **Conditions before starting collection:**
-1. confirm coverage on the current timetable (round 2, section 6), including the morning peak;
-2. choose an interval of 4 min or less and a host that respects it (section 7);
+1. confirm coverage on the current timetable (round 2, section 6), including the morning peak: weekend done, weekday slots to do;
+2. choose an interval of 4 min or less (done: D5, 2 min) and a host that respects it (to do, section 7.2);
 3. define a storage strategy that fits within 500 MB (section 4).
 
 **Decisions to record in `DECISIONS.md`.**
 
 | Status | Decisions |
 | --- | --- |
-| Already recorded | D1, D2 (corrected pattern), D3, D4 |
-| To record if the owner agrees | D2 status changed to "validated" |
-| To come | Collection interval and host (section 7); which GTFS version counts for a given day (section 5); storage reduction strategy (section 4) |
+| Already recorded | D1, D2 (validated, corrected pattern), D3, D4, D5 (2-min collection interval) |
+| To come | Host (section 7.2); which GTFS version counts for a given day (section 5); storage reduction strategy (section 4) |
