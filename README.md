@@ -61,6 +61,7 @@ Design decisions are logged in [`DECISIONS.md`](DECISIONS.md). So far:
 - **Replacement coaches (D4):** coach services are excluded; only trains are measured.
 - **Collection interval (D5):** one snapshot every 2 minutes, because trains leave the feed 4 to 5 minutes after arriving.
 - **Christmas holidays (D6):** collected but analysed as a separate segment; headline figures use normal days.
+- **Collector host (D7):** a free-tier Google Cloud e2-micro virtual machine, which holds the 2-minute schedule.
 
 ## Key findings
 

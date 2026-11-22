@@ -201,7 +201,7 @@ For each slot, record: coverage, `delay` / `time` indicators (all trains and HdF
 
 The command takes one snapshot, then prints coverage, delay fields and feed window. Outputs are saved in `data/mesures/` with the date and time in their names. Coverage is recalculated on every saved snapshot, so the summary at the end of the `couverture_*.txt` output grows with each slot. Round 2 must be finished before the timetable change of 12–13 December.
 
-## 7. Collection interval and hosting — **interval decided (D5: 2 min), hosting pending (owner)**
+## 7. Collection interval and hosting — **decided: 2 min (D5), Google Cloud e2-micro (D7)**
 
 ### 7.1 Why the interval matters
 
@@ -244,7 +244,7 @@ The owner's laptop is ruled out. Figures below come from the providers' pages or
 - options D and E are the only ones that can also keep raw files outside the database;
 - collection will run over the 12–13 December timetable change (section 5).
 
-**The interval is decided (D5: 2 min). The host is left to the project owner.**
+**Decided by the owner on 22/11/2026:** interval of 2 min (D5) and option D, a Google Cloud e2-micro (D7). The machine was created the same day; the collector is not installed yet.
 
 ## 8. Decision
 
@@ -257,12 +257,12 @@ The owner's laptop is ruled out. Figures below come from the providers' pages or
 
 **Conditions before starting collection:**
 1. confirm coverage on the current timetable (round 2, section 6), including the morning peak: weekend done, weekday slots to do;
-2. choose an interval of 4 min or less (done: D5, 2 min) and a host that respects it (to do, section 7.2);
+2. choose an interval of 4 min or less (done: D5, 2 min) and a host that respects it (done: D7, Google Cloud e2-micro);
 3. define a storage strategy that fits within 500 MB (section 4).
 
 **Decisions to record in `DECISIONS.md`.**
 
 | Status | Decisions |
 | --- | --- |
-| Already recorded | D1, D2 (validated, corrected pattern), D3, D4, D5 (2-min collection interval) |
-| To come | Host (section 7.2); which GTFS version counts for a given day (section 5); storage reduction strategy (section 4) |
+| Already recorded | D1, D2 (validated, corrected pattern), D3, D4, D5 (2-min collection interval), D6 (Christmas holidays, version 1 freeze), D7 (host) |
+| To come | Which GTFS version counts for a given day (section 5); storage reduction strategy (section 4) |
