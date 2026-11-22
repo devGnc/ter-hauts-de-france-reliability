@@ -59,6 +59,7 @@ Design decisions are logged in [`DECISIONS.md`](DECISIONS.md). So far:
 - **Trip key (D2):** train number + service date, because GTFS `trip_id`s change between exports.
 - **Scheduled train (D3):** a train counts as scheduled at time T if it is running or departs within the next 60 minutes, which matches what the feed shows.
 - **Replacement coaches (D4):** coach services are excluded; only trains are measured.
+- **Collection interval (D5):** one snapshot every 2 minutes, because trains leave the feed 4 to 5 minutes after arriving.
 
 ## Key findings
 
@@ -117,4 +118,5 @@ cp .env.example .env             # then fill in the values
 python src/phase0_lire_flux.py   # one snapshot of the feed (needs data/gtfs_region/)
 python src/phase0_fenetre_flux.py   # time window shown by the feed, from saved snapshots
 python src/phase0_couverture.py     # coverage of scheduled HdF trains, from saved snapshots
+./src/phase0_mesure.sh              # the three scripts above in one go, outputs saved in data/mesures/
 ```

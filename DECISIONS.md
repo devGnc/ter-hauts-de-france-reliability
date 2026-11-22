@@ -17,7 +17,7 @@ This log feeds the *Method* section of the README.
 - **Chosen:** train number + service date. The train number is in `trip_headsign` (`trip_short_name` is empty) and is extracted from the `trip_id` with the pattern `OCE[A-Z]{2}(\d+)`: prefix `OCESN` for agency 1187, `OCEEA` for agency 5235 (Picardy lines). The first pattern, `OCESN(\d+)`, missed every line of agency 5235 (found in phase 0, 27/09).
 - **Rejected:** `trip_id` alone. It contains an export timestamp (e.g. `OCESN16350F8784835:2026-09-22T17:41:41Z`, 25 distinct timestamps in a single file) and therefore changes from one GTFS version to the next.
 - **Reason:** a join on an unstable identifier would lose trains without any visible error.
-- **Status:** provisional, to be validated against the real-time feed in phase 0 (see `docs/phase0_feasibility.md`).
+- **Status:** **validated** (22/11/2026), with the pattern `OCE[A-Z]{2}(\d+)`. Evidence from phase 0: exact `trip_id` match gives 0 matches on every snapshot (static and real-time formats differ); train number + service date finds 404 of 404 scheduled HdF trains in round 1, and 62 of 62 and 61 of 61 on the current timetable (22/11), where the pattern extracts a number from every `trip_id` in the feed. See `docs/phase0_feasibility.md`, sections 1 and 2.
 
 ## D3 — Definition of a "scheduled train" at the time of an observation
 
@@ -32,3 +32,10 @@ This log feeds the *Method* section of the README.
 - **Rejected:** keeping them as scheduled trains missing from the feed. The real-time feed barely tracks coaches: over 3 observations (25 and 26/09), 13 coaches were scheduled and only 1 appeared in the feed. They would almost always be counted as missing data. After exclusion, 100% of scheduled trains are present in the feed (404 of 404).
 - **Reason:** the project is about train reliability; a coach in the timetable is not a train.
 - **Limitation:** coach services (engineering works) are not measured, to be stated in the limitations. Open question for phase 3: does a train replaced by a coach count as a cancellation from the passenger's point of view?
+
+## D5 — Collection interval
+
+- **Chosen:** one snapshot of the feed every **2 minutes** during phase 2 (720 per day).
+- **Rejected:** 3 or 4 min (enough in theory, but a single late or skipped run can lose the post-arrival state of the trains in that window); 5 min and more (only 80% of trains caught after arrival at 5 min if they stay visible 4 min, 40–50% at 10 min); under 2 min (the feed is refreshed every 2 min according to its documentation, so nothing new).
+- **Reason:** trains leave the feed 4 to 5 min after their arrival (−4 to −5 min on all phase 0 snapshots). At 2 min, each train is seen about twice after arriving, which leaves a margin for one missed run. See `docs/phase0_feasibility.md`, section 7.1.
+- **Consequences:** the host, still to be chosen (section 7.2), must actually hold this interval. Raw volume is about 37.7 GiB over 8 weeks (section 4): the storage reduction strategy is still open.

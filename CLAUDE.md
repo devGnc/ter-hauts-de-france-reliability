@@ -32,9 +32,10 @@ Cadrage conseil : la Région est un client fictif. Le projet se conclut par 3 re
 ## Décisions prises
 
 - **D1 — Périmètre :** GTFS de la Région, 71 lignes, `route_id` identiques au GTFS national. Exclus : cars (`route_type = 3`) et K1, K2, C73, C76 (vraisemblablement Grand Est, à confirmer). **65 lignes ferroviaires.** `agency_id` et `route_short_name` sont écartés comme critères (non discriminants ou non uniques).
-- **D2 — Clé de trajet :** numéro de train + date de circulation. Le `trip_id` contient un horodatage d'export et change entre les versions. Le numéro est dans `trip_headsign` et s'extrait du `trip_id` par `OCE[A-Z]{2}(\d+)` (préfixe `OCESN` agence 1187, `OCEEA` agence 5235 ; `OCESN(\d+)` seul ratait toutes les lignes picardes). Provisoire : à valider contre le flux en phase 0.
+- **D2 — Clé de trajet :** numéro de train + date de circulation. Le `trip_id` contient un horodatage d'export et change entre les versions. Le numéro est dans `trip_headsign` et s'extrait du `trip_id` par `OCE[A-Z]{2}(\d+)` (préfixe `OCESN` agence 1187, `OCEEA` agence 5235 ; `OCESN(\d+)` seul ratait toutes les lignes picardes). **Validée** le 22/11/2026 : 0 correspondance exacte sur `trip_id`, 404/404 par numéro + date (série 1), 62/62 et 61/61 sur le GTFS actuel.
 - **D3 — Train prévu à l'instant T :** en circulation (départ ≤ T ≤ arrivée, horaires théoriques) ou départ dans l'heure qui suit (T < départ ≤ T + 60 min). Fenêtre mesurée sur 5 observations avec `src/phase0_fenetre_flux.py` (33 à 44 % des trains du flux pas encore partis ; trains visibles 4 à 5 min après l'arrivée, non intégré).
 - **D4 — Cars de remplacement :** les trajets dont le mode est `Car TER` (lu dans le `stop_id` du GTFS) sont exclus des trains prévus, même sous une ligne ferroviaire : le flux ne suit presque pas les cars (1 sur 13 observés).
+- **D5 — Intervalle de collecte :** une photo toutes les 2 min (les trains quittent le flux 4 à 5 min après leur arrivée ; le flux est rafraîchi toutes les 2 min selon sa documentation). Hébergement non décidé.
 
 Détail complet : `DECISIONS.md`.
 
@@ -53,7 +54,7 @@ Détail complet : `DECISIONS.md`.
 ## Phase en cours
 
 **Phase 0 — Test de faisabilité** (septembre – novembre 2026).
-Scripts : `src/phase0_lire_flux.py` (une photo), `src/phase0_fenetre_flux.py` (fenêtre du flux), `src/phase0_couverture.py` (couverture). Rapport : `docs/phase0_feasibility.md`, rédigé avec la série 1 (23–26/09 : 404/404 trains HdF prévus présents). Restent : la série 2 de mesures sur le GTFS actuel (pointes de semaine, heure creuse, week-end), puis la décision go / no-go de l'auteur, et son choix d'intervalle de collecte et d'hébergement (section 7 du rapport : intervalle ≤ 4 min nécessaire pour voir chaque train après son arrivée).
+Scripts : `src/phase0_lire_flux.py` (une photo), `src/phase0_fenetre_flux.py` (fenêtre du flux), `src/phase0_couverture.py` (couverture), `src/phase0_mesure.sh` (les trois en une commande, sorties dans `data/mesures/`). Rapport : `docs/phase0_feasibility.md`. Série 1 (23–26/09) : 404/404 trains HdF prévus présents. Série 2 sur le GTFS du 21/11 (archivé) : week-end fait le 22/11 (62/62 et 61/61) ; restent les créneaux de semaine (pointe du matin, heure creuse, pointe du soir), à lancer par l'auteur avec `./src/phase0_mesure.sh` avant le 12/12. Restent ensuite la décision go / no-go de l'auteur et son choix d'hébergement (section 7.2 du rapport ; intervalle fixé à 2 min, D5).
 En cas de no-go : examiner le flux SIRI ET Lite et un éventuel flux régional, puis, en dernier recours, basculer sur une comparaison des régions à partir des données mensuelles.
 
 **Environnement cloud :** l'environnement « ter-hauts-de-france-reliability » autorise proxy.transport.data.gouv.fr, transport.data.gouv.fr et eu.ftp.opendatasoft.com. L'environnement par défaut bloque ces sources : démarrer les sessions qui ont besoin du flux sur le premier.
