@@ -7,7 +7,7 @@
 | Round | Dates | Status |
 | --- | --- | --- |
 | 1 | 23–26 September 2026, 5 snapshots | Done |
-| 2 | November–December 2026, on the current timetable | **In progress:** weekend done (Sun 22/11, 2 snapshots), weekday slots to do (see [section 6](#6-measurements-still-to-do)) |
+| 2 | November–December 2026, on the current timetable | **In progress:** weekend (Sun 22/11, 2 snapshots) and weekday off-peak (Mon 23/11) done, weekday peaks to do (see [section 6](#6-measurements-still-to-do)) |
 
 The weekend measurement planned for 21 November 2026 could not be run from the cloud session (no network access to the data sources). It was run locally on Sunday 22 November.
 
@@ -62,15 +62,17 @@ For round 1, the first version, downloaded on 23/09, was overwritten, so the 23/
 | --- | --- | --- | --- | --- | --- | --- |
 | Sun 22/11, 15:58 | Weekend | 5 | 62 | 62 | **100%** | 5 |
 | Sun 22/11, 16:00 | Weekend | 5 | 61 | 61 | **100%** | 4 |
+| Mon 23/11, 10:22 | Weekday off-peak | 2 | 86 | 86 | **100%** | 15 |
 | Weekday morning peak | | | | | To do | |
-| Weekday off-peak | | | | | To do | |
 | Weekday evening peak | | | | | To do | |
 
-The two weekend snapshots are 2 minutes apart (the second one comes from the first run of `phase0_mesure.sh`): they show almost the same trains and count as one time slot. All 61–62 present trains were `SCHEDULED`.
+The two weekend snapshots are 2 minutes apart (the second one comes from the first run of `phase0_mesure.sh`): they show almost the same trains and count as one time slot. All 61–62 present trains were `SCHEDULED`, and so were the 86 of Monday 23/11.
 
-**Feed window, round 2 (`phase0_fenetre_flux.py`).** 43.6% and 43.8% of the trains in the feed (all of France) had not departed yet, within the 33–44% range of round 1 (D3). 2 trains on each snapshot had a forecast departure more than 1 h later (furthest: +144 min). Round 1 also had a few (0, 0, 1, 6 and 0; furthest +81 min). They are outside the D3 window, so they do not change the denominator.
+**Cancelled trains missing from the GTFS (Mon 23/11).** The feed held 2 HdF trains marked `CANCELED` for 23/11: no. 846504 (line P71, departure 09:45) and no. 841424 (line P63, 09:53). The GTFS of 21/11 runs both trains every weekday from 24/11, but not on Monday 23/11. The cancellation was most likely already known when that GTFS was published. These trains are outside the denominator (the GTFS does not schedule them), so they do not affect coverage, but a count of cancellations based on the GTFS alone would miss them (see [section 5](#5-pitfalls-found-during-phase-0)).
 
-**Finding.** Every scheduled HdF train was present in the feed: 404 of 404 in round 1 (3 snapshots), 62 of 62 and 61 of 61 on the current timetable (weekend). Weekday morning peak (07:30–08:30), weekday off-peak and evening peak have not yet been measured on the current timetable.
+**Feed window, round 2 (`phase0_fenetre_flux.py`).** 43.6% and 43.8% of the trains in the feed (all of France) had not departed yet, within the 33–44% range of round 1 (D3). 2 trains on each snapshot had a forecast departure more than 1 h later (furthest: +144 min). On Monday 23/11 at 10:22: 39.9% (484 of 1,212) not departed yet, 1 train more than 1 h later (+69 min). Round 1 also had a few (0, 0, 1, 6 and 0; furthest +81 min). They are outside the D3 window, so they do not change the denominator.
+
+**Finding.** Every scheduled HdF train was present in the feed: 404 of 404 in round 1 (3 snapshots), 62 of 62 and 61 of 61 (weekend) and 86 of 86 (weekday off-peak) on the current timetable. Weekday morning peak (07:30–08:30) and evening peak have not yet been measured on the current timetable.
 
 ## 2. `trip_id` / train number match (validation of D2)
 
@@ -85,8 +87,9 @@ The two weekend snapshots are 2 minutes apart (the second one comes from the fir
 | Sat 26/09, 15:56 | 1,029 | 50 | 0 | 60 |
 | Sun 22/11, 15:58 (round 2) | 1,105 | 0 | 0 | 67 |
 | Sun 22/11, 16:00 (round 2) | 1,114 | 0 | 0 | 65 |
+| Mon 23/11, 10:22 (round 2) | 1,212 | 0 | 0 | 103 |
 
-\* Round 1: measured with the first pattern `OCESN(\d+)`, before the `OCEEA` fix. These columns undercount HdF trains. Round 2: current pattern `OCE[A-Z]{2}(\d+)`, which extracts a number from every `trip_id` in the feed. In both rounds the last column matches on train number only (no date check). In round 2 it gives the same count as the number + date match of `phase0_couverture.py` (62 + 5 = 67 and 61 + 4 = 65 trains, inside and outside the D3 window).
+\* Round 1: measured with the first pattern `OCESN(\d+)`, before the `OCEEA` fix. These columns undercount HdF trains. Round 2: current pattern `OCE[A-Z]{2}(\d+)`, which extracts a number from every `trip_id` in the feed. In both rounds the last column matches on train number only (no date check). On Sunday 22/11 it gives the same count as the number + date match of `phase0_couverture.py` (62 + 5 = 67 and 61 + 4 = 65 trains, inside and outside the D3 window). On Monday 23/11, 103 = 86 + 15 + 2: the 2 extra trains are the cancelled trains that the GTFS does not schedule on that day (section 1).
 
 **The two formats are different.**
 
@@ -102,22 +105,22 @@ The two weekend snapshots are 2 minutes apart (the second one comes from the fir
 
 In GTFS-RT, a `StopTimeEvent` can carry a `delay` (in seconds), a `time` (absolute Unix timestamp), or both.
 
-| Indicator (arrival at last stop) | Round 1 | Round 2, Sun 22/11 15:58 | Round 2, Sun 22/11 16:00 | Round 2, weekdays |
-| --- | --- | --- | --- | --- |
-| **All trains in the feed** | | 1,105 trains | 1,114 trains | |
-| Share with `delay` | ≥ 99.5% on all 5 snapshots (printed as 1.0, rounded to 2 decimals) | 100% (1,105) | 100% (1,114) | To do |
-| Share with `time` | Not measured (the script did not count it then) | 100% (1,105) | 100% (1,114) | To do |
-| Share with neither | Not measured | 0% | 0% | To do |
-| Share of `delay` exactly 0 | Not measured | 84.7% (936 of 1,105) | 84.9% (946 of 1,114) | To do |
-| **HdF trains only*** | Not measured | 67 trains | 65 trains | |
-| Share with `delay` | Not measured | 100% (67) | 100% (65) | To do |
-| Share with `time` | Not measured | 100% (67) | 100% (65) | To do |
-| Share with neither | Not measured | 0% | 0% | To do |
-| Share of `delay` exactly 0 | Not measured | 95.5% (64 of 67) | 95.4% (62 of 65) | To do |
+| Indicator (arrival at last stop) | Round 1 | Round 2, Sun 22/11 15:58 | Round 2, Sun 22/11 16:00 | Round 2, Mon 23/11 10:22 | Round 2, weekday peaks |
+| --- | --- | --- | --- | --- | --- |
+| **All trains in the feed** | | 1,105 trains | 1,114 trains | 1,212 trains | |
+| Share with `delay` | ≥ 99.5% on all 5 snapshots (printed as 1.0, rounded to 2 decimals) | 100% (1,105) | 100% (1,114) | 100% (1,212) | To do |
+| Share with `time` | Not measured (the script did not count it then) | 100% (1,105) | 100% (1,114) | 100% (1,212) | To do |
+| Share with neither | Not measured | 0% | 0% | 0% | To do |
+| Share of `delay` exactly 0 | Not measured | 84.7% (936 of 1,105) | 84.9% (946 of 1,114) | 80.5% (976 of 1,212) | To do |
+| **HdF trains only*** | Not measured | 67 trains | 65 trains | 103 trains | |
+| Share with `delay` | Not measured | 100% (67) | 100% (65) | 100% (103) | To do |
+| Share with `time` | Not measured | 100% (67) | 100% (65) | 100% (103) | To do |
+| Share with neither | Not measured | 0% | 0% | 0% | To do |
+| Share of `delay` exactly 0 | Not measured | 95.5% (64 of 67) | 95.4% (62 of 65) | 78.6% (81 of 103) | To do |
 
 \* HdF trains recognised by train number (see note under the table of section 2).
 
-On a Sunday afternoon, every train carries both fields at its last stop, and almost all HdF trains show a delay of exactly 0 at the terminus. Whether this 0 means "on time" or "no information" remains open (see below); the weekday slots, especially the peaks, will show whether the share of zeros drops when there is more traffic.
+On all three round 2 snapshots, every train carries both fields at its last stop. The share of HdF trains with a delay of exactly 0 at the terminus drops from about 95% on Sunday afternoon to 78.6% on Monday off-peak. Whether this 0 means "on time" or "no information" remains open (see below); the weekday peaks will show whether the share of zeros drops further when there is more traffic.
 
 **Statuses observed (trip level)**
 
@@ -130,6 +133,7 @@ On a Sunday afternoon, every train carries both fields at its last stop, and alm
 | Sat 26/09, 15:56 | 901 | 122 | 6 |
 | Sun 22/11, 15:58 (round 2) | 961 | 132 | 12 |
 | Sun 22/11, 16:00 (round 2) | 968 | 134 | 12 |
+| Mon 23/11, 10:22 (round 2) | 1,054 | 141 | 17 |
 
 `SKIPPED` also appears at stop level (a stop the train does not serve).
 
@@ -152,7 +156,7 @@ On a Sunday afternoon, every train carries both fields at its last stop, and alm
 
 **Snapshot size, round 1:** 947, 766, 852, 1,620 and 717 KiB (mean **980.4 KiB**). The evening peak snapshot is twice as large as the others. Night snapshots were not measured; they are probably smaller, so the mean below likely overestimates a full day.
 
-**Snapshot size, round 2:** 741 and 745 KiB (758,789 and 762,998 bytes) on Sunday 22/11, close to the round 1 Saturday snapshot (717 KiB). The table below still uses the round 1 mean; weekday sizes on the current timetable are **to do**.
+**Snapshot size, round 2:** 741 and 745 KiB (758,789 and 762,998 bytes) on Sunday 22/11, close to the round 1 Saturday snapshot (717 KiB); 780 KiB (798,528 bytes) on Monday 23/11 at 10:22, close to the round 1 weekday morning snapshots (766 and 852 KiB). The table below still uses the round 1 mean; weekday peak sizes on the current timetable are **to do**.
 
 **Raw volume** (mean size × snapshots per day × number of days), compared with the Supabase free plan (500 MB per project):
 
@@ -167,7 +171,7 @@ On a Sunday afternoon, every train carries both fields at its last stop, and alm
 
 **After keeping HdF trains only.** HdF trains made up 9.3%, 10.5% and 6.6% of the entities in the 3 snapshots of section 1. This is a share of *entities*, not of *bytes*. With 10.5% as an upper bound on entities, 8 weeks at a 2-min interval would still be about 4.0 GiB (×8 the quota).
 
-The share of *bytes* is measured by `phase0_couverture.py` (encoded size of the HdF entities divided by the file size). Round 2, Sunday 22/11: **6.0%** (45 of 741 KiB) and **5.8%** (43 of 745 KiB). Applied to the round 1 mean size, 8 weeks at a 2-min interval would be about 2.3 GiB (980.4 KiB × 6.0% × 720 × 56 days), about ×5 the quota. This rests on weekend snapshots only: weekday byte shares are **to do**. The volume once stored as table rows depends on the schema, which will be designed in phase 1.
+The share of *bytes* is measured by `phase0_couverture.py` (encoded size of the HdF entities divided by the file size). Round 2, Sunday 22/11: **6.0%** (45 of 741 KiB) and **5.8%** (43 of 745 KiB); Monday 23/11 off-peak: **8.8%** (69 of 780 KiB), with more HdF trains in the feed (101 against 66 on Sunday). Applied to the round 1 mean size, 8 weeks at a 2-min interval would be about 2.3 GiB with 6.0% (980.4 KiB × 6.0% × 720 × 56 days, about ×5 the quota) and about 3.3 GiB with 8.8% (about ×7). Weekday peak byte shares are **to do**. The volume once stored as table rows depends on the schema, which will be designed in phase 1.
 
 **Conclusion.** Raw snapshots cannot be stored in the 500 MB database at any interval, and keeping only HdF trains is not enough either. Phase 2 needs a reduction strategy: for example, which fields to keep, whether to store only changes, and where raw files are archived outside the database. That strategy is not decided here.
 
@@ -177,6 +181,7 @@ The share of *bytes* is measured by `phase0_couverture.py` (encoded size of the 
 - **Later GTFS versions remove cancelled trains.** For the 25/09 18:01 snapshot, the 23/09 GTFS gave 247 scheduled trains including 8 `CANCELED`; the 25/09 GTFS gave 240 including 1 `CANCELED`. A GTFS published after the fact underestimates cancellations. Which version counts for a given day is a decision for phase 1.
 - **Two `trip_id` prefixes** (`OCESN`, `OCEEA`): a pattern limited to the first silently dropped 9 lines (section 1).
 - **Two `stop_id` formats in the same feed:** `StopPoint:OCETGV INOUI-87192039` and `StopArea:OCE87756056`. The 8-digit station code is the common part.
+- **Planned cancellations are already missing from the GTFS.** On Monday 23/11, the feed marked 2 HdF trains `CANCELED` that the GTFS of 21/11 runs every other weekday but not that day (section 1). A GTFS published *before* the day can therefore already leave out some cancellations, not only a GTFS published after it. How cancelled trains are defined and counted is a decision for later phases.
 - **Annual timetable change:** expected on the night of 12 to 13 December 2026 (European timetable change), i.e. during the planned collection. The reference data will have to be reloaded, and train numbers and lines checked again.
 
 ## 6. Measurements still to do
@@ -186,7 +191,7 @@ Round 2, on the current GTFS (download and archive it first):
 | Slot | Day | Status |
 | --- | --- | --- |
 | Morning peak, 07:30–08:30 | Weekday | To do |
-| Off-peak, 10:00–15:00 | Weekday | To do |
+| Off-peak, 10:00–15:00 | Weekday | **Done:** Mon 23/11, 10:22 |
 | Evening peak, 17:00–19:00 | Weekday | To do |
 | Weekend, any time | Saturday or Sunday | **Done:** Sun 22/11, 15:58 and 16:00 |
 | Night, 23:00–05:00 (for the storage mean) | Any | To do, optional |
@@ -205,7 +210,7 @@ The command takes one snapshot, then prints coverage, delay fields and feed wind
 
 ### 7.1 Why the interval matters
 
-Trains disappear from the feed **4 to 5 minutes after their arrival**. The oldest arrival still visible was −5, −5, −5, −5 and −4 min on the 5 round 1 snapshots, and −5 and −4 min on the 2 round 2 snapshots (Sunday 22/11). To see each train once *after* it has arrived at the terminus, there must be a snapshot inside that window.
+Trains disappear from the feed **4 to 5 minutes after their arrival**. The oldest arrival still visible was −5, −5, −5, −5 and −4 min on the 5 round 1 snapshots, and −5 and −4 min on the 2 round 2 snapshots of Sunday 22/11, −4 min on Monday 23/11. To see each train once *after* it has arrived at the terminus, there must be a snapshot inside that window.
 
 With snapshots every Δ minutes, perfectly on time, the share of trains caught after arrival is min(1, W/Δ), where W is the visibility window:
 
@@ -253,10 +258,10 @@ The owner's laptop is ruled out. Figures below come from the providers' pages or
 
 **Proposed: Go, on conditions.**
 
-**Justification.** On round 1, 404 of 404 scheduled HdF trains were present in the feed (3 snapshots: morning, evening peak, weekend). On the current timetable, 62 of 62 and 61 of 61 (weekend, round 2). The trip key D2 works once both `trip_id` prefixes are handled. Delays are available, although they are forecasts that must be handled with care.
+**Justification.** On round 1, 404 of 404 scheduled HdF trains were present in the feed (3 snapshots: morning, evening peak, weekend). On the current timetable, 62 of 62 and 61 of 61 (weekend, round 2) and 86 of 86 (weekday off-peak). The trip key D2 works once both `trip_id` prefixes are handled. Delays are available, although they are forecasts that must be handled with care.
 
 **Conditions before starting collection:**
-1. confirm coverage on the current timetable (round 2, section 6), including the morning peak: weekend done, weekday slots to do;
+1. confirm coverage on the current timetable (round 2, section 6), including the morning peak: weekend and weekday off-peak done, weekday peaks to do;
 2. choose an interval of 4 min or less (done: D5, 2 min) and a host that respects it (done: D7, Google Cloud e2-micro);
 3. define a storage strategy that fits within 500 MB (section 4).
 
